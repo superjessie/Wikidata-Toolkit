@@ -54,4 +54,13 @@ public interface StatementGroup extends Iterable<Statement> {
 	 * @return an EntityIdValue
 	 */
 	EntityIdValue getSubject();
+	
+	/**
+	 * Returns a new version of this group, where the given
+	 * statement has been added. If some statement in the group
+	 * has the same non-empty statement id, then the new statement
+	 * will replace it. Otherwise the new statement is appended
+	 * at the end of the list.
+	 */
+	StatementGroup withStatement(Statement statement);
 }
