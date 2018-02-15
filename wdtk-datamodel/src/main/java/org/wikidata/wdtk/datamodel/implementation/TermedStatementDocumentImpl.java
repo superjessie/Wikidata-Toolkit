@@ -89,13 +89,13 @@ public abstract class TermedStatementDocumentImpl extends
 	 * This is what is called <i>claim</i> in the JSON model. It corresponds to
 	 * the statement group in the WDTK model.
 	 */
-	private final Map<String, List<Statement>> claims;
+	protected final Map<String, List<Statement>> claims;
 
 	/**
 	 * Statement groups. This member is initialized when statements are
 	 * accessed.
 	 */
-	private List<StatementGroup> statementGroups;
+	private List<StatementGroup> statementGroups = null;
 
 	/**
 	 * The id of the entity that the document refers to. This is not mapped to
@@ -225,6 +225,41 @@ public abstract class TermedStatementDocumentImpl extends
 			this.claims = Collections.<String,List<Statement>>emptyMap();
 		}
 		this.revisionId = revisionId;
+	}
+	
+	/**
+	 * Protected constructor provided to ease the creation
+	 * of copies. No check is made and each field is reused without
+	 * copying.
+	 * 
+	 * @param labels
+	 * 		a map from language codes to monolingual values with
+	 * 	    the same language codes
+	 * @param descriptions
+	 * 		a map from language codes to monolingual values with
+	 * 	    the same language codes 	    
+	 * @param aliases
+	 * 		a map from language codes to lists of monolingual values
+	 *      with the same language codes
+	 * @param statementGroups
+	 * @param revisionId
+	 */
+	protected TermedStatementDocumentImpl(
+			String entityId,
+			String siteIri,
+			Map<String, MonolingualTextValue> labels,
+			Map<String, MonolingualTextValue> descriptions,
+			Map<String, List<MonolingualTextValue>> aliases,
+			Map<String, List<Statement>> claims,
+			long revisionId) {
+		this.entityId = entityId;
+		this.labels = labels;
+		this.descriptions = descriptions;
+		this.aliases = aliases;
+		this.claims = claims;
+		this.statementGroups = null;
+		this.revisionId = revisionId;
+		this.siteIri = siteIri;
 	}
 
 

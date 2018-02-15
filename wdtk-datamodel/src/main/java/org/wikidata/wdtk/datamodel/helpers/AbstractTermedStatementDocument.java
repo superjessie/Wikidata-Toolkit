@@ -1,5 +1,7 @@
 package org.wikidata.wdtk.datamodel.helpers;
 
+import java.util.ArrayList;
+
 /*
  * #%L
  * Wikidata Toolkit Data Model
@@ -21,9 +23,14 @@ package org.wikidata.wdtk.datamodel.helpers;
  */
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import org.wikidata.wdtk.datamodel.implementation.StatementGroupImpl;
 import org.wikidata.wdtk.datamodel.interfaces.DatatypeIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.EntityIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
@@ -36,6 +43,7 @@ import org.wikidata.wdtk.datamodel.interfaces.StatementDocument;
 import org.wikidata.wdtk.datamodel.interfaces.StatementGroup;
 import org.wikidata.wdtk.datamodel.interfaces.StringValue;
 import org.wikidata.wdtk.datamodel.interfaces.TermedDocument;
+import org.wikidata.wdtk.datamodel.interfaces.TermedStatementDocument;
 import org.wikidata.wdtk.datamodel.interfaces.TimeValue;
 import org.wikidata.wdtk.datamodel.interfaces.Value;
 import org.wikidata.wdtk.datamodel.interfaces.ValueSnak;
@@ -54,7 +62,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  *
  */
 public abstract class AbstractTermedStatementDocument implements
-		TermedDocument, StatementDocument {
+		TermedStatementDocument {
 
 	@Override
 	public String findLabel(String languageCode) {
@@ -323,6 +331,67 @@ public abstract class AbstractTermedStatementDocument implements
 			return null;
 		}
 		return statement.getClaim().getMainSnak().getValue();
+	}
+	
+	/**
+	 * Helper to add a statement to a list of statement groups. If there
+	 * is already a statement with the same non-empty id, it will be replaced
+	 * by the new statement. Otherwise the statement will be added at the
+	 * end of the matching statement group, or a new statement group will
+	 * be created.
+	 * 
+	 * @param statement
+	 * 		the statement to add or replace by
+	 * @param claims
+	 * 		the current statement groups
+	 * @return
+	 * 		the updated statement groups
+	 */
+	protected static Map<String, List<Statement>> addStatementToGroups(Statement statement, Map<String, List<Statement>> claims) {
+		Map<String, List<Statement>> newGroups = new HashMap<>(claims);
+		
+		PropertyIdValue pid = statement.getClaim().getMainSnak().getPropertyId();
+		if (claims.containsKey(pid.getId())) {
+			StatementGroup group = new StatementGroupImpl(claims.get(pid.getId()));
+			newGroups.put(pid.getId(), group.withStatement(statement).getStatements());
+		} else {
+			// none of the existing statement groups use the same property,
+			// so we create a new one.
+			List<Statement> newGroup =
+					Collections.<Statement>singletonList(statement);
+			newGroups.put(pid.getId(), newGroup);
+		}
+		return newGroups;
+	}
+	
+	/**
+	 * Helper to remove statements designated by a set of statement ids from
+	 * a list of statement groups.
+	 * 
+	 * @param statementIds
+	 * 		the ids of the statements to remove.
+	 * @param claims
+	 * 		the groups where the statements should be removed
+	 * @return
+	 * 		the new list of statement groups
+	 */
+	protected static Map<String, List<Statement>> removeStatements(Set<String> statementIds, Map<String, List<Statement>> claims) {
+		Map<String, List<Statement>> newGroups = new HashMap<>(claims);
+		
+		for(Entry<String, List<Statement>> entry : claims.entrySet()) {
+			List<Statement> newStatements = new ArrayList<>(entry.getValue().size());
+			for(Statement statement : entry.getValue()) {
+				if(!statementIds.contains(statement.getStatementId())) {
+					newStatements.add(statement);
+				}
+			}
+			if(newStatements.size() == entry.getValue().size()) {
+				newGroups.put(entry.getKey(), entry.getValue());
+			} else if (!newStatements.isEmpty()) {
+				newGroups.put(entry.getKey(), newStatements);
+			}
+		}
+		return newGroups;
 	}
 
 	/**
