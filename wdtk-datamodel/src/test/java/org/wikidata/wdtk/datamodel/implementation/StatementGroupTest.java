@@ -27,6 +27,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,6 +49,7 @@ public class StatementGroupTest {
 	StatementGroup sg2;
 	Statement statement1;
 	Statement statement2;
+	Statement statementEmptyId;
 	EntityIdValue subject;
 	PropertyIdValue property;
 
@@ -67,6 +69,9 @@ public class StatementGroupTest {
 		statement2 = new StatementImpl(claim,
 				Collections.<Reference> emptyList(), StatementRank.PREFERRED,
 				"MyId");
+		statementEmptyId = new StatementImpl(claim,
+				Collections.<Reference> emptyList(), StatementRank.NORMAL,
+				"");
 
 		sg1 = new StatementGroupImpl(
 				Collections.singletonList(statement1));
@@ -155,5 +160,24 @@ public class StatementGroupTest {
 
 		new StatementGroupImpl(statements);
 	}
+	
+	public void addSameStatementToGroup() {
+		StatementGroup added = sg1.withStatement(statement1);
+		
+		assertEquals(sg1, added);
+	}
+	
+	public void addStatementWithMatchingId() {
+		StatementGroup added = sg1.withStatement(statement2);
+		
+		assertEquals(new StatementGroupImpl(Collections.singletonList(statement2)), added);
+	}
 
+	public void addStatementEmptyId() {
+		StatementGroup initial = new StatementGroupImpl(Collections.singletonList(statementEmptyId));
+		StatementGroup added = initial.withStatement(statementEmptyId);
+		
+		assertEquals(new StatementGroupImpl(Arrays.asList(statementEmptyId, statementEmptyId)),
+				added);
+	}
 }

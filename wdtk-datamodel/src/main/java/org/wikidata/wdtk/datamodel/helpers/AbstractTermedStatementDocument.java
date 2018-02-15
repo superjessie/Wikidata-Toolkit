@@ -376,7 +376,7 @@ public abstract class AbstractTermedStatementDocument implements
 	 * 		the new list of statement groups
 	 */
 	protected static Map<String, List<Statement>> removeStatements(Set<String> statementIds, Map<String, List<Statement>> claims) {
-		Map<String, List<Statement>> newGroups = new HashMap<>(claims);
+		Map<String, List<Statement>> newGroups = new HashMap<>(claims.size());
 		
 		for(Entry<String, List<Statement>> entry : claims.entrySet()) {
 			List<Statement> newStatements = new ArrayList<>(entry.getValue().size());
@@ -385,6 +385,7 @@ public abstract class AbstractTermedStatementDocument implements
 					newStatements.add(statement);
 				}
 			}
+			
 			if(newStatements.size() == entry.getValue().size()) {
 				newGroups.put(entry.getKey(), entry.getValue());
 			} else if (!newStatements.isEmpty()) {

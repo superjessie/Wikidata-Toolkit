@@ -368,7 +368,7 @@ public class DataObjectFactoryImplTest {
 	public static Statement getTestStatement(int subjectSeed, int seed,
 			int size, String entityType) {
 		List<SnakGroup> qualifiers = getTestValueSnakGroups(seed * 100, size);
-		Statement statement = new StatementImpl("",
+		Statement statement = new StatementImpl("statement"+seed+"-"+size+"-"+entityType,
 				StatementRank.NORMAL,
 				getTestValueSnak(ValueType.fromInt(seed), seed, seed),
 				qualifiers, null,

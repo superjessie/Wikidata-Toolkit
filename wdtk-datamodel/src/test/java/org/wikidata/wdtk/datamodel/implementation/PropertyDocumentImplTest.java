@@ -240,5 +240,78 @@ public class PropertyDocumentImplTest {
 		new PropertyDocumentImpl(pid, labels, descriptions2, aliases,
 				statementGroups, null, 1234);
 	}
+	
+	@Test
+	public void testWithRevisionId() {
+		assertEquals(1235L, pd1.withRevisionId(1235L).getRevisionId());
+		assertEquals(pd1, pd1.withRevisionId(1325L).withRevisionId(pd1.getRevisionId()));
+	}
+	
+	@Test
+	public void testWithLabelInNewLanguage() {
+		MonolingualTextValue newLabel = new MonolingualTextValueImpl(
+				"Propriété P42", "fr");
+		PropertyDocument withLabel = pd1.withLabel(newLabel);
+		assertEquals("Propriété P42", withLabel.findLabel("fr"));
+		assertEquals("Property 42", withLabel.findLabel("en"));
+	}
 
+	@Test
+	public void testWithOverridenLabel() {
+		MonolingualTextValue newLabel = new MonolingualTextValueImpl(
+				"The P42 Property", "en");
+		PropertyDocument withLabel = pd1.withLabel(newLabel);
+		assertEquals("The P42 Property", withLabel.findLabel("en"));
+	}
+	
+	@Test
+	public void testWithIdenticalLabel() {
+		MonolingualTextValue newLabel = new MonolingualTextValueImpl(
+				"Property 42", "en");
+		PropertyDocument withLabel = pd1.withLabel(newLabel);
+		assertEquals(withLabel, pd1);
+	}
+	
+	@Test
+	public void testWithDescriptionInNewLanguage() {
+		MonolingualTextValue newDescription = new MonolingualTextValueImpl(
+				"la propriété 42 bien connue", "fr");
+		PropertyDocument withDescription = pd1.withDescription(newDescription);
+		assertEquals("la propriété 42 bien connue", withDescription.findDescription("fr"));
+		assertEquals("Dies ist Property 42.", withDescription.findDescription("de"));
+	}
+
+	@Test
+	public void testWithOverridenDescription() {
+		MonolingualTextValue newDescription = new MonolingualTextValueImpl(
+				"eine viel bessere Beschreibung", "de");
+		PropertyDocument withDescription = pd1.withDescription(newDescription);
+		assertEquals("eine viel bessere Beschreibung", withDescription.findDescription("de"));
+	}
+	
+	@Test
+	public void testWithIdenticalDescription() {
+		MonolingualTextValue newDescription = new MonolingualTextValueImpl(
+				"Dies ist Property 42.", "de");
+		PropertyDocument withDescription = pd1.withDescription(newDescription);
+		assertEquals(withDescription, pd1);
+	}
+	
+	@Test
+	public void testWithAliasInNewLanguage() {
+		MonolingualTextValue newAlias = new MonolingualTextValueImpl(
+				"Prop42", "fr");
+		PropertyDocument withAliases = pd1.withAliases("fr", Collections.singletonList(newAlias));
+		assertEquals(Collections.singletonList(newAlias), withAliases.getAliases().get("fr"));
+	}
+
+	@Test
+	public void testWithOverridenAliases() {
+		MonolingualTextValue newAlias = new MonolingualTextValueImpl(
+				"A new alias of P42", "en");
+
+		PropertyDocument withAlias = pd1.withAliases("en", Collections.singletonList(newAlias));
+		assertEquals(Collections.singletonList(newAlias), withAlias.getAliases().get("en"));
+	}
+	
 }
