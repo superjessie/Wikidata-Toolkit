@@ -24,6 +24,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -37,6 +38,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.wikidata.wdtk.datamodel.interfaces.Claim;
 import org.wikidata.wdtk.datamodel.interfaces.DatatypeIdValue;
+import org.wikidata.wdtk.datamodel.interfaces.EntityIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.ItemDocument;
 import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.MonolingualTextValue;
@@ -233,6 +235,73 @@ public class ItemDocumentImplTest {
 		assertTrue(statements.hasNext());
 		assertEquals(s, statements.next());
 		assertFalse(statements.hasNext());
+	}
+	
+	@Test
+	public void testWithRevisionId() {
+		assertEquals(1235L, ir1.withRevisionId(1235L).getRevisionId());
+		assertEquals(ir1, ir1.withRevisionId(1325L).withRevisionId(ir1.getRevisionId()));
+	}
+	
+	@Test
+	public void testWithLabelInNewLanguage() {
+		MonolingualTextValue newLabel = new MonolingualTextValueImpl(
+				"Item Q42", "fr");
+		ItemDocument withLabel = ir1.withLabel(newLabel);
+		assertEquals("Item Q42", withLabel.findLabel("fr"));
+	}
+	
+	@Test
+	public void testWithDescriptionInNewLanguage() {
+		MonolingualTextValue newDescription = new MonolingualTextValueImpl(
+				"l'item 42 bien connu", "fr");
+		ItemDocument withDescription = ir1.withDescription(newDescription);
+		assertEquals("l'item 42 bien connu", withDescription.findDescription("fr"));
+	}
+
+	@Test
+	public void testWithOverridenDescription() {
+		MonolingualTextValue newDescription = new MonolingualTextValueImpl(
+				"eine viel bessere Beschreibung", "de");
+		ItemDocument withDescription = ir1.withDescription(newDescription);
+		assertEquals("eine viel bessere Beschreibung", withDescription.findDescription("de"));
+	}
+	
+	@Test
+	public void testWithAliasInNewLanguage() {
+		MonolingualTextValue newAlias = new MonolingualTextValueImpl(
+				"Item42", "fr");
+		ItemDocument withAliases = ir1.withAliases("fr", Collections.singletonList(newAlias));
+		assertEquals(Collections.singletonList(newAlias), withAliases.getAliases().get("fr"));
+	}
+
+	@Test
+	public void testWithOverridenAliases() {
+		MonolingualTextValue newAlias = new MonolingualTextValueImpl(
+				"A new alias of Q42", "en");
+
+		ItemDocument withAlias = ir1.withAliases("en", Collections.singletonList(newAlias));
+		assertEquals(Collections.singletonList(newAlias), withAlias.getAliases().get("en"));
+	}
+	
+	@Test
+	public void testAddStatement() {
+		Statement fresh = DataObjectFactoryImplTest.getTestStatement(5, 4, 2, EntityIdValue.ET_ITEM);
+		Claim claim = fresh.getClaim();
+		assertFalse(ir1.hasStatementValue(
+				claim.getMainSnak().getPropertyId(),
+				claim.getValue()));
+		ItemDocument withStatement = ir1.withStatement(fresh);
+		assertTrue(withStatement.hasStatementValue(
+				claim.getMainSnak().getPropertyId(),
+				claim.getValue()));
+	}
+	
+	@Test
+	public void testDeleteStatements() {
+		Statement toRemove = statementGroups.get(0).getStatements().get(0);
+		ItemDocument withoutStatement = ir1.withoutStatementIds(Collections.singleton(toRemove.getStatementId()));
+		assertNotEquals(withoutStatement, ir1);
 	}
 
 }

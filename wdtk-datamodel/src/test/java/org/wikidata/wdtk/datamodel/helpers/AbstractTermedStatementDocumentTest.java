@@ -3,6 +3,7 @@ package org.wikidata.wdtk.datamodel.helpers;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -90,5 +91,13 @@ public class AbstractTermedStatementDocumentTest {
 		Statement copy = new StatementImpl(statementA.getClaim(), statementA.getReferences(), statementA.getRank(), "");
 		Map<String, List<Statement>> added = AbstractTermedStatementDocument.addStatementToGroups(copy, initialStatements);
 		assertNotEquals(initialStatements, added);
+	}
+	
+	@Test
+	public void addFreshStatement() {
+		Statement fresh = DataObjectFactoryImplTest.getTestStatement(5, 4, 2, EntityIdValue.ET_ITEM);
+		Map<String, List<Statement>> added = AbstractTermedStatementDocument.addStatementToGroups(fresh, initialStatements);
+		List<Statement> sameProp = added.get(fresh.getClaim().getMainSnak().getPropertyId().getId());
+		assertTrue(sameProp.contains(fresh));
 	}
 }
