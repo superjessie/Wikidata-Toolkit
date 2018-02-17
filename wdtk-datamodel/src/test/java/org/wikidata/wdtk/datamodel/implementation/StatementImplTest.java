@@ -82,6 +82,7 @@ public class StatementImplTest {
 				StatementRank.NORMAL, "MyId");
 	}
 
+	@Test
 	public void referencesCanBeNull() {
 		Statement statement = new StatementImpl(claim, null, StatementRank.NORMAL, "MyId");
 		assertTrue(statement.getReferences().isEmpty());
@@ -93,10 +94,19 @@ public class StatementImplTest {
 				"MyId");
 	}
 
+	@Test
 	public void idCanBeNull() {
 		Statement statement = new StatementImpl(claim, Collections.<Reference> emptyList(),
 				StatementRank.NORMAL, null);
 		assertEquals(statement.getStatementId(), "");
+	}
+	
+	@Test
+	public void withId() {
+		Statement statement = new StatementImpl(claim, Collections.<Reference> emptyList(),
+				StatementRank.NORMAL, null);
+		Statement withId = statement.withStatementId("some id");
+		assertEquals("some id", withId.getStatementId());
 	}
 
 	@Test
