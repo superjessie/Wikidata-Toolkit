@@ -34,6 +34,7 @@ import org.wikidata.wdtk.datamodel.implementation.json.JacksonPreStatement;
 import org.wikidata.wdtk.datamodel.interfaces.EntityDocument;
 import org.wikidata.wdtk.datamodel.interfaces.EntityIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.MonolingualTextValue;
+import org.wikidata.wdtk.datamodel.interfaces.PropertyIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.Statement;
 import org.wikidata.wdtk.datamodel.interfaces.StatementGroup;
 import org.wikidata.wdtk.datamodel.interfaces.TermedDocument;
@@ -289,6 +290,31 @@ public abstract class TermedStatementDocumentImpl extends
 			}
 		}
 		return this.statementGroups;
+	}
+	
+	/**
+	 * More efficient implementation of findStatementGroup than the
+	 * default one provided in {@link AbstractTermedStatementDocument}
+	 */
+	@Override
+	public StatementGroup findStatementGroup(PropertyIdValue propertyIdValue) {
+		StatementGroup group = findStatementGroup(propertyIdValue.getId());
+		if (group != null && group.getProperty().equals(propertyIdValue)) {
+			return group;
+		}
+		return null;
+	}
+
+	/**
+	 * More efficient implementation of findStatementGroup than the
+	 * default one provided in {@link AbstractTermedStatementDocument}
+	 */
+	@Override
+	public StatementGroup findStatementGroup(String propertyIdValue) {
+		if (this.claims.containsKey(propertyIdValue)) {
+			return new StatementGroupImpl(this.claims.get(propertyIdValue));
+		}
+		return null;
 	}
 
 	/**
