@@ -34,13 +34,7 @@ import org.wikidata.wdtk.datamodel.helpers.ItemDocumentBuilder;
 import org.wikidata.wdtk.datamodel.helpers.PropertyDocumentBuilder;
 import org.wikidata.wdtk.datamodel.helpers.StatementBuilder;
 import org.wikidata.wdtk.datamodel.helpers.JsonSerializer;
-import org.wikidata.wdtk.datamodel.interfaces.DatatypeIdValue;
-import org.wikidata.wdtk.datamodel.interfaces.ItemDocument;
-import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
-import org.wikidata.wdtk.datamodel.interfaces.MonolingualTextValue;
-import org.wikidata.wdtk.datamodel.interfaces.PropertyDocument;
-import org.wikidata.wdtk.datamodel.interfaces.PropertyIdValue;
-import org.wikidata.wdtk.datamodel.interfaces.Statement;
+import org.wikidata.wdtk.datamodel.interfaces.*;
 import org.wikidata.wdtk.util.CompressionType;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 import org.wikidata.wdtk.wikibaseapi.apierrors.TagsApplyNotAllowedException;
@@ -344,6 +338,49 @@ public class WikibaseDataEditorTest {
 
 		PropertyDocument result = wde.createPropertyDocument(propertyDocument,
 				null, null);
+
+		assertTrue(wde.editAsBot());
+		assertEquals(expectedResultDocument, result);
+	}
+
+	@Test
+	public void testCreateLexemeBot() throws IOException, MediaWikiApiErrorException {
+		WikibaseDataEditor wde = new WikibaseDataEditor(this.con,
+				Datamodel.SITE_WIKIDATA);
+		wde.setEditAsBot(true);
+
+		LexemeDocument lexemeDocument = Datamodel.makeLexemeDocument(
+				LexemeIdValue.NULL,
+				Datamodel.makeWikidataItemIdValue("Q1"),
+				Datamodel.makeWikidataItemIdValue("Q1"),
+				Collections.singletonList(Datamodel.makeMonolingualTextValue("text", "fr")),
+				Collections.emptyList(),
+				Collections.emptyList(),
+				Collections.emptyList()
+		);
+		LexemeDocument expectedResultDocument = Datamodel.makeLexemeDocument(
+				Datamodel.makeWikidataLexemeIdValue("L1234"),
+				Datamodel.makeWikidataItemIdValue("Q1"),
+				Datamodel.makeWikidataItemIdValue("Q1"),
+				Collections.singletonList(Datamodel.makeMonolingualTextValue("text", "fr")),
+				Collections.emptyList(),
+				Collections.emptyList(),
+				Collections.emptyList()
+		).withRevisionId(124);
+		String expectedResult = "{\"entity\":" + JsonSerializer.getJsonString(expectedResultDocument) + ",\"success\":1}";
+
+		Map<String, String> params = new HashMap<>();
+		params.put("action", "wbeditentity");
+		params.put("new", "lexeme");
+		params.put("bot", "");
+		params.put("token", "42307b93c79b0cb558d2dfb4c3c92e0955e06041+\\");
+		params.put("format", "json");
+		params.put("maxlag", "5");
+		String data = JsonSerializer.getJsonString(lexemeDocument);
+		params.put("data", data);
+		con.setWebResource(params, expectedResult);
+
+		LexemeDocument result = wde.createLexemeDocument(lexemeDocument, null, null);
 
 		assertTrue(wde.editAsBot());
 		assertEquals(expectedResultDocument, result);

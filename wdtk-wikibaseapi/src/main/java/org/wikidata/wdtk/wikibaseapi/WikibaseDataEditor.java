@@ -285,6 +285,42 @@ public class WikibaseDataEditor {
 	}
 
 	/**
+	 * Creates a new lexeme document with the summary message as provided.
+	 * <p>
+	 * The lexeme document that is given as a parameter must use a local
+	 * lexeme id, such as {@link PropertyIdValue#NULL}, and its revision id
+	 * must be 0. The newly created document is returned. It will contain the
+	 * new lexeme id and revision id. Note that the site IRI used in the
+	 * lexeme id is not part of the API response; the site IRI given when
+	 * constructing this object is used in this place.
+	 * <p>
+	 * Statements in the given data must have empty statement IDs.
+	 *
+	 * @param lexemeDocument
+	 *            the document that contains the data to be written
+	 * @param summary
+	 *            summary for the edit; will be prepended by an automatically
+	 *            generated comment; the length limit of the autocomment
+	 *            together with the summary is 260 characters: everything above
+	 *            that limit will be cut off
+	 * @param tags
+	 *            string identifiers of the tags to apply to the edit.
+	 *            Ignored if null or empty.
+	 * @return newly created property document, or null if there was an error
+	 * @throws IOException
+	 *             if there was an IO problem, such as missing network
+	 *             connection
+	 */
+	public LexemeDocument createLexemeDocument(
+			LexemeDocument lexemeDocument, String summary, List<String> tags)
+			throws IOException, MediaWikiApiErrorException {
+		String data = JsonSerializer.getJsonString(lexemeDocument);
+		return (LexemeDocument) this.wbEditingAction
+				.wbEditEntity(null, null, null, "lexeme", data, false,
+						this.editAsBot, 0, summary, tags);
+	}
+
+	/**
 	 * Writes the data for the given item document with the summary message as
 	 * given. Optionally, the existing data is cleared (deleted).
 	 * <p>
@@ -383,6 +419,159 @@ public class WikibaseDataEditor {
 		return (PropertyDocument) this.wbEditingAction.wbEditEntity(
 				propertyDocument.getEntityId().getId(), null, null, null,
 				data, clear, this.editAsBot, propertyDocument.getRevisionId(),
+				summary, tags);
+	}
+
+	/**
+	 * Writes the data for the given lexeme document with the summary message
+	 * as given. Optionally, the existing data is cleared (deleted).
+	 * <p>
+	 * The id of the given lexeme document is used to specify which lexeme
+	 * document should be changed. The site IRI will be ignored for this.
+	 * <p>
+	 * The revision id of the given lexeme document is used to specify the
+	 * base revision, enabling the API to detect edit conflicts. The value 0 can
+	 * be used to omit this. It is strongly recommended to give a revision id
+	 * when making edits where the outcome depends on the previous state of the
+	 * data (i.e., any edit that does not use "clear").
+	 * <p>
+	 * If the data is not cleared, then the existing data will largely be
+	 * preserved. Statements with empty ids will be added without checking if
+	 * they exist already; statements with (valid) ids will replace any existing
+	 * statements with these ids or just be added if there are none. Labels,
+	 * descriptions, and aliases will be preserved for all languages for which
+	 * no data is given at all. For aliases this means that writing one alias in
+	 * a language will overwrite all aliases in this language, so some care is
+	 * needed.
+	 *
+	 * @param lexemeDocument
+	 *            the document that contains the data to be written
+	 * @param clear
+	 *            if true, the existing data will be replaced by the given data;
+	 *            if false, the given data will be added to the existing data,
+	 *            overwriting only parts that are set to new values
+	 * @param summary
+	 *            summary for the edit; will be prepended by an automatically
+	 *            generated comment; the length limit of the autocomment
+	 *            together with the summary is 260 characters: everything above
+	 *            that limit will be cut off
+	 * @param tags
+	 *            string identifiers of the tags to apply to the edit.
+	 * @return the modified property document, or null if there was an error
+	 * @throws IOException
+	 *             if there was an IO problem, such as missing network
+	 *             connection
+	 */
+	public LexemeDocument editLexemeDocument(
+			LexemeDocument lexemeDocument, boolean clear, String summary,
+			List<String> tags)
+			throws IOException, MediaWikiApiErrorException {
+		String data = JsonSerializer.getJsonString(lexemeDocument);
+		return (LexemeDocument) this.wbEditingAction.wbEditEntity(
+				lexemeDocument.getEntityId().getId(), null, null, null,
+				data, clear, this.editAsBot, lexemeDocument.getRevisionId(),
+				summary, tags);
+	}
+
+	/**
+	 * Writes the data for the given form document with the summary message
+	 * as given. Optionally, the existing data is cleared (deleted).
+	 * <p>
+	 * The id of the given form document is used to specify which form
+	 * document should be changed. The site IRI will be ignored for this.
+	 * <p>
+	 * The revision id of the given form document is used to specify the
+	 * base revision, enabling the API to detect edit conflicts. The value 0 can
+	 * be used to omit this. It is strongly recommended to give a revision id
+	 * when making edits where the outcome depends on the previous state of the
+	 * data (i.e., any edit that does not use "clear").
+	 * <p>
+	 * If the data is not cleared, then the existing data will largely be
+	 * preserved. Statements with empty ids will be added without checking if
+	 * they exist already; statements with (valid) ids will replace any existing
+	 * statements with these ids or just be added if there are none. Labels,
+	 * descriptions, and aliases will be preserved for all languages for which
+	 * no data is given at all. For aliases this means that writing one alias in
+	 * a language will overwrite all aliases in this language, so some care is
+	 * needed.
+	 *
+	 * @param formDocument
+	 *            the document that contains the data to be written
+	 * @param clear
+	 *            if true, the existing data will be replaced by the given data;
+	 *            if false, the given data will be added to the existing data,
+	 *            overwriting only parts that are set to new values
+	 * @param summary
+	 *            summary for the edit; will be prepended by an automatically
+	 *            generated comment; the length limit of the autocomment
+	 *            together with the summary is 260 characters: everything above
+	 *            that limit will be cut off
+	 * @param tags
+	 *            string identifiers of the tags to apply to the edit.
+	 * @return the modified property document, or null if there was an error
+	 * @throws IOException
+	 *             if there was an IO problem, such as missing network
+	 *             connection
+	 */
+	public FormDocument editFormDocument(
+			FormDocument formDocument, boolean clear, String summary,
+			List<String> tags)
+			throws IOException, MediaWikiApiErrorException {
+		String data = JsonSerializer.getJsonString(formDocument);
+		return (FormDocument) this.wbEditingAction.wbEditEntity(
+				formDocument.getEntityId().getId(), null, null, null,
+				data, clear, this.editAsBot, formDocument.getRevisionId(),
+				summary, tags);
+	}
+
+	/**
+	 * Writes the data for the given sense document with the summary message
+	 * as given. Optionally, the existing data is cleared (deleted).
+	 * <p>
+	 * The id of the given sense document is used to specify which sense
+	 * document should be changed. The site IRI will be ignored for this.
+	 * <p>
+	 * The revision id of the given sense document is used to specify the
+	 * base revision, enabling the API to detect edit conflicts. The value 0 can
+	 * be used to omit this. It is strongly recommended to give a revision id
+	 * when making edits where the outcome depends on the previous state of the
+	 * data (i.e., any edit that does not use "clear").
+	 * <p>
+	 * If the data is not cleared, then the existing data will largely be
+	 * preserved. Statements with empty ids will be added without checking if
+	 * they exist already; statements with (valid) ids will replace any existing
+	 * statements with these ids or just be added if there are none. Labels,
+	 * descriptions, and aliases will be preserved for all languages for which
+	 * no data is given at all. For aliases this means that writing one alias in
+	 * a language will overwrite all aliases in this language, so some care is
+	 * needed.
+	 *
+	 * @param senseDocument
+	 *            the document that contains the data to be written
+	 * @param clear
+	 *            if true, the existing data will be replaced by the given data;
+	 *            if false, the given data will be added to the existing data,
+	 *            overwriting only parts that are set to new values
+	 * @param summary
+	 *            summary for the edit; will be prepended by an automatically
+	 *            generated comment; the length limit of the autocomment
+	 *            together with the summary is 260 characters: everything above
+	 *            that limit will be cut off
+	 * @param tags
+	 *            string identifiers of the tags to apply to the edit.
+	 * @return the modified property document, or null if there was an error
+	 * @throws IOException
+	 *             if there was an IO problem, such as missing network
+	 *             connection
+	 */
+	public SenseDocument editSenseDocument(
+			SenseDocument senseDocument, boolean clear, String summary,
+			List<String> tags)
+			throws IOException, MediaWikiApiErrorException {
+		String data = JsonSerializer.getJsonString(senseDocument);
+		return (SenseDocument) this.wbEditingAction.wbEditEntity(
+				senseDocument.getEntityId().getId(), null, null, null,
+				data, clear, this.editAsBot, senseDocument.getRevisionId(),
 				summary, tags);
 	}
 
@@ -654,8 +843,7 @@ public class WikibaseDataEditor {
 	 * @throws IOException 
 	 * 		    if there are any IO errors, such as missing network connection
 	 */
-	public <T extends StatementDocument> void nullEdit(ItemIdValue itemId)
-			throws IOException, MediaWikiApiErrorException {
+	public void nullEdit(ItemIdValue itemId) throws IOException, MediaWikiApiErrorException {
 		ItemDocument currentDocument = (ItemDocument) this.wikibaseDataFetcher
 				.getEntityDocument(itemId.getId());
 		
@@ -673,11 +861,28 @@ public class WikibaseDataEditor {
 	 * @throws IOException 
 	 * 		    if there are any IO errors, such as missing network connection
 	 */
-	public <T extends StatementDocument> void nullEdit(PropertyIdValue propertyId)
-			throws IOException, MediaWikiApiErrorException {
+	public void nullEdit(PropertyIdValue propertyId) throws IOException, MediaWikiApiErrorException {
 		PropertyDocument currentDocument = (PropertyDocument) this.wikibaseDataFetcher
 				.getEntityDocument(propertyId.getId());
 		
+		nullEdit(currentDocument);
+	}
+
+	/**
+	 * Performs a null edit on a lexeme. This has some effects on Wikibase,
+	 * such as refreshing the labels of the referred items in the UI.
+	 *
+	 * @param propertyId
+	 * 			the document to perform a null edit on
+	 * @throws MediaWikiApiErrorException
+	 * 	        if the API returns errors
+	 * @throws IOException
+	 * 		    if there are any IO errors, such as missing network connection
+	 */
+	public void nullEdit(LexemeIdValue propertyId) throws IOException, MediaWikiApiErrorException {
+		LexemeDocument currentDocument = (LexemeDocument) this.wikibaseDataFetcher
+				.getEntityDocument(propertyId.getId());
+
 		nullEdit(currentDocument);
 	}
 	
