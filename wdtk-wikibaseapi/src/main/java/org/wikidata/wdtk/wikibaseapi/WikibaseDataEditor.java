@@ -154,6 +154,42 @@ public class WikibaseDataEditor {
 	}
 	
 	/**
+	 * The throttle threshold slows editing down when
+	 * the target site's lag goes above the threshold.
+	 * It does so by decreasing the edit frequency linearly:
+	 * when the lag is equal to the threshold, the nominal
+	 * edit speed is used, and when it reaches the maxlag,
+	 * editing stops.
+	 * 
+	 * When the throttle threshold is greater than
+	 * the maxlag, dynamic throttling is disabled.
+	 * 
+	 * @return
+	 * 	   the throttle threshold, in seconds
+	 */
+	public double getThrottleThreshold() {
+		return this.wbEditingAction.getThrottleThreshold();
+	}
+	
+	/**
+	 * The throttle threshold slows editing down when
+	 * the target site's lag goes above the threshold.
+	 * It does so by decreasing the edit frequency linearly:
+	 * when the lag is equal to the threshold, the nominal
+	 * edit speed is used, and when it reaches the maxlag,
+	 * editing stops.
+	 * 
+	 * Setting the throttle threshold to a higher value than
+	 * the maxlag disables this mechanism.
+	 * 
+	 * @return
+	 * 	   the throttle threshold, in seconds
+	 */
+	public void setThrottleThreshold(double throttleThreshold) {
+		this.wbEditingAction.setThrottleThreshold(throttleThreshold);
+	}
+	
+	/**
 	 * Number of times we should retry if an editing action fails because
 	 * the lag is too high.
 	 */

@@ -92,6 +92,12 @@ public class WbEditingAction {
 	double maxLagBackOffFactor = 1.5;
 	
 	/**
+	 * Lag threshold above which editing should slow down,
+	 * until stopping when the lag reaches maxLag.
+	 */
+	double throttleThreshold = 2.5;
+	
+	/**
 	 * Number of recent editing times to monitor in order to avoid editing too
 	 * fast. Wikidata.org seems to block fast editors after 9 edits, so this
 	 * size seems to make sense.
@@ -217,6 +223,42 @@ public class WbEditingAction {
 	 */
 	public void setAverageTimePerEdit(int milliseconds) {
 		this.averageMsecsPerEdit = milliseconds;
+	}
+	
+	/**
+	 * The throttle threshold slows editing down when
+	 * the target site's lag goes above the threshold.
+	 * It does so by decreasing the edit frequency linearly:
+	 * when the lag is equal to the threshold, the nominal
+	 * edit speed is used, and when it reaches the maxlag,
+	 * editing stops.
+	 * 
+	 * When the throttle threshold is greater than
+	 * the maxlag, dynamic throttling is disabled.
+	 * 
+	 * @return
+	 * 	   the throttle threshold, in seconds
+	 */
+	public double getThrottleThreshold() {
+		return this.throttleThreshold;
+	}
+	
+	/**
+	 * The throttle threshold slows editing down when
+	 * the target site's lag goes above the threshold.
+	 * It does so by decreasing the edit frequency linearly:
+	 * when the lag is equal to the threshold, the nominal
+	 * edit speed is used, and when it reaches the maxlag,
+	 * editing stops.
+	 * 
+	 * Setting the throttle threshold to a higher value than
+	 * the maxlag disables this mechanism.
+	 * 
+	 * @return
+	 * 	   the throttle threshold, in seconds
+	 */
+	public void setThrottleThreshold(double throttleThreshold) {
+		this.throttleThreshold = throttleThreshold;
 	}
 
 	/**
@@ -894,4 +936,25 @@ public class WbEditingAction {
 		maxLagBackOffFactor = value;
 	}
 
+	/**
+	 * Retrieves the current lag from the target site, by making an API call.
+	 * 
+	 * @throws MediaWikiApiErrorException
+	 * 		when an unexpected MediaWiki API error happened (not the spurious
+	 *      one normally returned by MediaWiki when retrieving lag).
+	 * @throws IOException
+	 *      when communication with the server failed.
+	 *      
+	 */
+	public double getCurrentLag() throws IOException, MediaWikiApiErrorException {
+		Map<String,String> parameters = new HashMap<>();
+		parameters.put("action", "query");
+		parameters.put("maxlag", "-1");
+		try {
+			this.connection.sendJsonRequest("POST", parameters);
+		} catch (MaxlagErrorException e) {
+			return e.getLag();
+		}
+		throw new IllegalStateException("MediaWiki did not return any maxlag value");
+	}
 }
