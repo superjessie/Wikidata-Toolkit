@@ -88,7 +88,7 @@ public class DirectoryManagerFactoryTest {
 		}
 	}
 
-	@Test
+	//@Test
 	public void createDirectoryManagerString() throws IOException {
 		Path path = Paths.get(System.getProperty("user.dir"));
 		DirectoryManagerFactory
@@ -101,7 +101,7 @@ public class DirectoryManagerFactoryTest {
 		assertEquals(path, dmi.directory);
 	}
 
-	@Test
+	//@Test
 	public void createDefaultDirectoryManagerPath() throws IOException {
 		Path path = Paths.get(System.getProperty("user.dir"));
 		DirectoryManager dm = DirectoryManagerFactory.createDirectoryManager(
@@ -112,17 +112,51 @@ public class DirectoryManagerFactoryTest {
 		assertEquals(path, dmi.directory);
 	}
 
-	@Test(expected = RuntimeException.class)
+	//@Test(expected = RuntimeException.class)
 	public void createDirectoryManagerNoConstructor() throws IOException {
 		DirectoryManagerFactory
 				.setDirectoryManagerClass(TestDirectoryManager.class);
 		DirectoryManagerFactory.createDirectoryManager("/", true);
 	}
 
-	@Test(expected = IOException.class)
+	//@Test(expected = IOException.class)
 	public void createDirectoryManagerIoException() throws IOException {
 		DirectoryManagerFactory.createDirectoryManager(
 				"/nonexisting-directory/123456789/hopefully", true);
+	}
+
+	@Test(expected = IOException.class)
+	public void testPASS_createDirectoryManagerIoException() throws IOException {
+
+		createDirectoryManagerString();//cleaner
+		createDirectoryManagerIoException();//victim
+	}
+
+
+	@Test(expected = IOException.class)
+	public void testERROR_createDirectoryManagerIoException() throws IOException{
+
+		createDirectoryManagerNoConstructor();//polluter
+		createDirectoryManagerIoException();//victim
+	}
+
+	@Test
+	public void testPASS_createDefaultDirectoryManagerPath() throws IOException {
+		createDirectoryManagerString();//cleaner
+		createDefaultDirectoryManagerPath();//victim
+	}
+
+	@Test
+	public void testERROR_createDefaultDirectoryManagerPath() throws IOException{
+
+
+		org.wikidata.wdtk.util.DirectoryManagerFactoryTest directoryManagerFactoryTest = new org.wikidata.wdtk.util.DirectoryManagerFactoryTest();
+
+		try{ directoryManagerFactoryTest.createDirectoryManagerNoConstructor();}//polluter
+		catch (RuntimeException e) {//do nothing
+		}
+
+		directoryManagerFactoryTest.createDefaultDirectoryManagerPath();
 	}
 
 }

@@ -22,4 +22,42 @@
 		</dependency>
 	</dependencies>
 
+	<build>
+	<plugins>
+	<plugin>
+		<groupId>org.mudebug</groupId>
+		<artifactId>prapr-plugin</artifactId>
+		<version>2.0.3-SNAPSHOT</version>
+		<configuration>
+			<targetClasses>
+				<param>org.wikidata.wdtk.util.DirectoryManagerFactoryTest*</param>
+
+			</targetClasses>
+			<mutators>
+				<mutator>ALL</mutator>
+			</mutators>
+		</configuration>
+	</plugin>
+
+		<plugin>
+			<groupId>edu.illinois.cs</groupId>
+			<artifactId>testrunner-maven-plugin</artifactId>
+			<version>1.0</version>
+			<dependencies>
+				<dependency>
+					<groupId>edu.illinois.cs</groupId>
+					<artifactId>idflakies</artifactId>
+					<!-- Use iDFlakies from Maven Central -->
+					<version>1.0.1</version>
+					<!-- Use the following version instead if you build iDFlakies locally and want to use the locally built version. -->
+					<!-- <version>1.0.2-SNAPSHOT</version> -->
+				</dependency>
+			</dependencies>
+			<configuration>
+				<className>edu.illinois.cs.dt.tools.detection.DetectorPlugin</className>
+			</configuration>
+		</plugin>
+	</plugins>
+	</build>
+
 </project>
